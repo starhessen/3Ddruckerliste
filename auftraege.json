@@ -7,11 +7,16 @@
   {
     "nummer": 2,
     "name": "dwdwdwd",
-    "status": "Wartend"
+    "status": "Fertig"
   },
   {
     "nummer": 3,
     "name": "dwdwd",
+    "status": "Wartend"
+  },
+  {
+    "nummer": 4,
+    "name": "frf",
     "status": "Wartend"
   }
 ]

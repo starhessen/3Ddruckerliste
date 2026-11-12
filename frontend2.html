@@ -3,225 +3,215 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>3D-Drucker | Effekt-Version</title>
+    <title>Print Desk | 3D-Drucker</title>
     <style>
       :root {
         color-scheme: dark;
-        --cyan: #45e7ff;
-        --pink: #ff4f9a;
-        --yellow: #ffe66d;
-        --green: #65f39b;
-        --red: #ff5b5b;
-        --ink: #07121d;
-        --panel: #0c1d2bdd;
-        font-family: "Trebuchet MS", Arial, sans-serif;
-        color: #eefaff;
-        background: var(--ink);
+        --bg: #101413;
+        --panel: #171d1b;
+        --light: #202a26;
+        --line: #33423b;
+        --text: #edf5ef;
+        --muted: #9eada3;
+        --lime: #c7f36b;
+        --orange: #ff9f43;
+        --red: #ff6868;
+        --green: #67d391;
+        font-family: "Segoe UI", Arial, sans-serif;
       }
-      *,
-      *::before,
-      *::after {
+      * {
         box-sizing: border-box;
       }
-      html,
       body {
-        min-height: 100%;
-      }
-      body {
+        min-height: 100vh;
         margin: 0;
-        overflow-x: hidden;
-        cursor: crosshair;
-        background: #07121d;
+        color: var(--text);
+        background: var(--bg);
       }
-      #space {
+      body::before {
         position: fixed;
         inset: 0;
-        width: 100%;
-        height: 100%;
-        pointer-events: none;
+        z-index: -1;
+        background:
+          radial-gradient(circle at 85% 0%, #c7f36b14, transparent 34%),
+          linear-gradient(135deg, #101413, #17201c);
+        content: "";
       }
-      .scanlines {
-        position: fixed;
-        inset: 0;
-        pointer-events: none;
-        opacity: 0.14;
-        background: repeating-linear-gradient(
-          0deg,
-          transparent 0 3px,
-          #fff 4px 5px
-        );
-        mix-blend-mode: overlay;
+      .shell {
+        width: min(1120px, calc(100% - 32px));
+        margin: auto;
+        padding: 28px 0 46px;
       }
-      #flash {
-        position: fixed;
-        z-index: 4;
-        inset: 0;
-        pointer-events: none;
-        background: white;
-        opacity: 0;
-      }
-      .floating-symbol {
-        position: fixed;
-        z-index: 0;
-        color: var(--pink);
-        font-size: clamp(1.5rem, 5vw, 4rem);
-        font-weight: bold;
-        pointer-events: none;
-        text-shadow: 0 0 16px currentColor;
-        animation: drift 6s ease-in-out infinite alternate;
-      }
-      .symbol-one {
-        top: 12%;
-        left: 5%;
-      }
-      .symbol-two {
-        right: 7%;
-        bottom: 18%;
-        color: var(--yellow);
-        animation-delay: -2s;
-      }
-      .symbol-three {
-        top: 56%;
-        left: 88%;
-        color: var(--green);
-        animation-delay: -4s;
-      }
-      main {
-        position: relative;
-        z-index: 1;
-        width: min(900px, calc(100% - 24px));
-        margin: 24px auto;
-        padding: clamp(18px, 5vw, 42px);
-        border: 1px solid #45e7ff66;
-        background: var(--panel);
-        box-shadow:
-          0 0 35px #45e7ff22,
-          inset 0 0 30px #ff4f9a0d;
-        backdrop-filter: blur(7px);
-      }
-      .topline {
+      header {
         display: flex;
         justify-content: space-between;
         align-items: flex-start;
         gap: 20px;
+        margin-bottom: 28px;
       }
-      .kicker {
-        margin: 0 0 6px;
-        color: var(--yellow);
+      .eyebrow {
+        margin: 0 0 8px;
+        color: var(--lime);
         font-size: 0.75rem;
-        font-weight: bold;
-        letter-spacing: 0.2em;
+        font-weight: 700;
+        letter-spacing: 0.16em;
         text-transform: uppercase;
       }
       h1 {
-        position: relative;
         margin: 0;
-        color: var(--cyan);
-        font-size: clamp(2rem, 7vw, 4.8rem);
+        font-size: clamp(2rem, 5vw, 4rem);
         line-height: 0.95;
-        text-shadow:
-          4px 4px 0 #ff4f9a44,
-          0 0 18px #45e7ff99;
-        animation: titleJolt 2.4s steps(2, end) infinite;
+        letter-spacing: -0.04em;
       }
-      .intro {
-        color: #b6d2dd;
+      .subtitle {
+        max-width: 560px;
+        margin: 12px 0 0;
+        color: var(--muted);
         line-height: 1.5;
       }
       .switcher {
-        flex: 0 0 auto;
-        padding: 8px 10px;
-        border: 1px solid var(--yellow);
-        color: var(--yellow);
+        padding: 10px 13px;
+        border: 1px solid var(--line);
+        color: var(--text);
+        background: var(--panel);
         text-decoration: none;
-        font-size: 0.8rem;
-        font-weight: bold;
+        font-size: 0.85rem;
       }
       .switcher:hover {
-        background: var(--yellow);
-        color: var(--ink);
+        border-color: var(--lime);
+        color: var(--lime);
       }
-      .form-area {
+      .overview {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 12px;
+        margin-bottom: 12px;
+      }
+      .metric,
+      .panel {
+        border: 1px solid var(--line);
+        background: #171d1bf2;
+        box-shadow: 0 12px 30px #0000001c;
+      }
+      .metric {
+        padding: 16px 18px;
+      }
+      .metric-label {
+        margin: 0 0 8px;
+        color: var(--muted);
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+      }
+      .metric-value {
+        margin: 0;
+        color: var(--lime);
+        font-size: 1.35rem;
+        font-weight: 700;
+      }
+      .layout {
+        display: grid;
+        grid-template-columns: 1.1fr 0.9fr;
+        gap: 12px;
+      }
+      .panel {
+        padding: clamp(18px, 3vw, 28px);
+      }
+      .panel-title {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        gap: 12px;
+        margin: 0 0 18px;
+        font-size: 1.05rem;
+      }
+      .panel-title small {
+        color: var(--muted);
+        font-size: 0.75rem;
+        font-weight: 400;
+      }
+      .add-form {
         display: grid;
         grid-template-columns: 1fr auto;
-        gap: 10px;
-        margin: 28px 0 12px;
+        gap: 9px;
+        margin-bottom: 18px;
       }
       input {
         min-width: 0;
         width: 100%;
-        padding: 14px;
-        border: 1px solid #45e7ff88;
-        border-radius: 0;
+        padding: 13px 14px;
+        border: 1px solid var(--line);
         outline: 0;
-        color: white;
-        background: #06121ddd;
+        color: var(--text);
+        background: #101513;
         font: inherit;
-        box-shadow: inset 0 0 12px #45e7ff12;
       }
       input:focus {
-        border-color: var(--yellow);
-        box-shadow: 0 0 14px #ffe66d66;
+        border-color: var(--lime);
+        box-shadow: 0 0 0 3px #c7f36b1c;
       }
       button {
-        position: relative;
-        overflow: hidden;
-        padding: 13px 15px;
-        border: 1px solid var(--cyan);
-        border-radius: 0;
-        color: var(--ink);
-        background: var(--cyan);
+        padding: 12px 14px;
+        border: 1px solid var(--lime);
+        color: #141a12;
+        background: var(--lime);
         font: inherit;
-        font-weight: bold;
+        font-weight: 700;
         cursor: pointer;
-        transition:
-          transform 0.15s,
-          box-shadow 0.15s;
+        transition: 0.18s ease;
       }
       button:hover {
-        transform: translateY(-4px) rotate(-1deg);
-        box-shadow:
-          0 9px 0 #ff4f9a,
-          0 0 22px #45e7ffcc;
+        transform: translateY(-2px);
+        box-shadow: 0 7px 0 #83a53d;
       }
       button:active {
-        transform: translateY(2px);
-      }
-      button.wild {
-        animation: wildButton 0.55s ease-in-out;
+        transform: translateY(1px);
+        box-shadow: none;
       }
       button.secondary {
-        color: var(--yellow);
-        background: transparent;
-        border-color: var(--yellow);
+        border-color: var(--line);
+        color: var(--text);
+        background: var(--light);
       }
-      button.danger {
-        color: white;
-        background: #a92345;
-        border-color: var(--pink);
+      button.warning {
+        border-color: var(--orange);
+        color: #21170d;
+        background: var(--orange);
       }
-      .buttons {
+      .actions {
         display: grid;
         grid-template-columns: repeat(3, 1fr);
+        gap: 9px;
+      }
+      .printer-state {
+        display: flex;
+        align-items: center;
         gap: 10px;
+        margin-top: 18px;
+        padding: 13px 14px;
+        border: 1px solid var(--line);
+        color: var(--muted);
+        background: #101513;
       }
-      #status {
-        margin: 24px 0 0;
-        padding: 14px;
-        border: 1px solid #45e7ff55;
-        color: var(--cyan);
-        background: #06121dcc;
-        box-shadow: 0 0 18px #45e7ff18;
+      .state-dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: var(--green);
+        box-shadow: 0 0 12px var(--green);
       }
-      #status.busy {
+      .printer-state.busy {
         border-color: var(--red);
-        color: #fff;
-        background: #5d1329cc;
-        animation: alarm 0.7s infinite alternate;
+        color: #ffd1d1;
+      }
+      .printer-state.busy .state-dot {
+        background: var(--red);
+        box-shadow: 0 0 14px var(--red);
+        animation: pulse 1s infinite alternate;
       }
       #progress-area {
         display: none;
-        margin-top: 12px;
+        margin-top: 16px;
       }
       #progress-area.visible {
         display: block;
@@ -229,70 +219,57 @@
       .progress-info {
         display: flex;
         justify-content: space-between;
-        margin-bottom: 5px;
-        color: var(--yellow);
-        font-size: 0.88rem;
+        margin-bottom: 7px;
+        color: var(--muted);
+        font-size: 0.8rem;
       }
       #progress-bar {
-        width: 100%;
-        height: 16px;
+        height: 12px;
         overflow: hidden;
-        border: 1px solid var(--cyan);
-        background: #06121d;
+        background: #0c100f;
       }
       #progress-fill {
-        width: 0%;
+        width: 0;
         height: 100%;
-        background: linear-gradient(
-          90deg,
-          var(--pink),
-          var(--yellow),
-          var(--green)
-        );
-        box-shadow: 0 0 14px var(--yellow);
+        background: var(--lime);
         transition: width 1s linear;
       }
-      .queue-heading {
-        display: flex;
-        justify-content: space-between;
-        align-items: baseline;
-        margin-top: 30px;
-        border-bottom: 1px solid #45e7ff55;
-      }
-      .section-title {
-        margin: 0 0 10px;
-        color: var(--yellow);
+      #finish-time {
+        display: block;
+        margin-top: 8px;
+        color: var(--muted);
+        font-size: 0.78rem;
       }
       #queue {
         display: grid;
-        gap: 10px;
-        margin-top: 12px;
+        gap: 8px;
+        max-height: 390px;
+        overflow: auto;
       }
       .job {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        gap: 16px;
-        padding: 14px;
-        border: 1px solid #ffffff22;
-        border-left: 5px solid var(--cyan);
-        background: #081827dd;
-        animation: arrive 0.45s both;
+        gap: 14px;
+        padding: 13px 14px;
+        border: 1px solid var(--line);
+        border-left: 4px solid var(--line);
+        background: var(--light);
+        animation: enter 0.3s ease both;
       }
       .job.printing {
         border-left-color: var(--red);
-        box-shadow: 0 0 16px #ff5b5b33;
       }
       .job.done {
         border-left-color: var(--green);
-        opacity: 0.72;
+        opacity: 0.7;
       }
       .job-name {
-        font-weight: bold;
+        font-weight: 700;
       }
       .job-status {
-        color: var(--yellow);
-        font-size: 0.88rem;
+        color: var(--muted);
+        font-size: 0.8rem;
       }
       .job.printing .job-status {
         color: var(--red);
@@ -300,224 +277,46 @@
       .job.done .job-status {
         color: var(--green);
       }
-      .falling {
-        animation: fall 2.8s ease-in-out;
+      .empty {
+        color: var(--muted);
       }
-      .spark {
-        position: fixed;
-        z-index: 5;
-        width: 8px;
-        height: 8px;
-        pointer-events: none;
-        background: var(--yellow);
-        box-shadow: 0 0 12px var(--yellow);
-        animation: explode 0.7s ease-out forwards;
-      }
-      .shockwave {
-        position: fixed;
-        z-index: 4;
-        width: 20px;
-        height: 20px;
-        border: 3px solid var(--yellow);
-        border-radius: 50%;
-        pointer-events: none;
-        animation: shockwave 0.7s ease-out forwards;
-      }
-      .trail {
-        position: fixed;
-        z-index: 3;
-        width: 6px;
-        height: 6px;
-        border-radius: 50%;
-        pointer-events: none;
-        background: var(--cyan);
-        box-shadow: 0 0 12px var(--cyan);
-        animation: trail 0.45s linear forwards;
-      }
-      .silly-button {
-        margin-top: 16px;
-        color: #07121d;
-        background: var(--pink);
-        border-color: var(--yellow);
-        transform: rotate(2deg);
-      }
-      #oracle {
-        min-height: 22px;
-        margin: 14px 0 0;
-        color: #ff9ac4;
-        font-family: "Courier New", monospace;
-        font-size: 0.82rem;
-      }
-      #cat-popup {
-        position: fixed;
-        z-index: 8;
-        right: 18px;
-        bottom: 18px;
-        display: none;
-        width: min(280px, calc(100% - 36px));
-        padding: 10px;
-        border: 2px solid var(--pink);
-        background: #07121df2;
-        box-shadow:
-          8px 8px 0 var(--yellow),
-          0 0 24px #ff4f9acc;
-        transform: rotate(3deg);
-      }
-      #cat-popup.show {
-        display: block;
-        animation: catAppear 0.45s cubic-bezier(0.2, 1.7, 0.5, 1);
-      }
-      #cat-popup img {
-        display: block;
-        width: 100%;
-        height: 150px;
-        object-fit: cover;
-        border: 1px solid var(--cyan);
-      }
-      #cat-popup p {
-        margin: 9px 0 2px;
-        color: var(--yellow);
-        font-size: 0.85rem;
-        font-weight: bold;
-      }
-      .close-cat {
-        position: absolute;
-        z-index: 1;
-        top: -12px;
-        right: -12px;
-        width: 30px;
-        height: 30px;
-        padding: 0;
-        border-radius: 50%;
-        color: white;
-        background: var(--red);
-      }
-      @keyframes fall {
-        0% {
-          transform: translateY(-80px) rotate(-8deg);
-          opacity: 0;
-        }
-        35% {
-          opacity: 1;
-        }
-        65% {
-          transform: translateY(8px) rotate(5deg);
-        }
-        100% {
-          transform: translateY(0) rotate(0);
-        }
-      }
-      @keyframes arrive {
+      @keyframes enter {
         from {
           opacity: 0;
-          transform: translateX(24px);
+          transform: translateY(8px);
         }
         to {
           opacity: 1;
-          transform: translateX(0);
+          transform: translateY(0);
         }
       }
-      @keyframes explode {
+      @keyframes pulse {
         to {
-          transform: translate(var(--x), var(--y)) scale(0);
-          opacity: 0;
+          transform: scale(1.35);
         }
       }
-      @keyframes alarm {
-        to {
-          box-shadow: 0 0 28px #ff5b5b99;
-        }
-      }
-      @keyframes drift {
-        from {
-          transform: translate(0, 0) rotate(-12deg);
-        }
-        to {
-          transform: translate(35px, -45px) rotate(18deg);
-        }
-      }
-      @keyframes titleJolt {
-        0%,
-        88%,
-        100% {
-          transform: skew(0);
-        }
-        90% {
-          transform: skew(-8deg) translateX(4px);
-        }
-        92% {
-          transform: skew(7deg) translateX(-3px);
-        }
-      }
-      @keyframes wildButton {
-        25% {
-          transform: translateY(-12px) rotate(5deg) scale(1.08);
-        }
-        55% {
-          transform: translateY(7px) rotate(-7deg);
-        }
-        80% {
-          transform: translateY(-4px) rotate(3deg);
-        }
-      }
-      @keyframes shockwave {
-        to {
-          transform: translate(-50%, -50%) scale(15);
-          opacity: 0;
-        }
-      }
-      @keyframes trail {
-        to {
-          transform: scale(0);
-          opacity: 0;
-        }
-      }
-      @keyframes catAppear {
-        from {
-          opacity: 0;
-          transform: translate(80px, 80px) rotate(35deg) scale(0);
-        }
-        to {
-          opacity: 1;
-          transform: rotate(3deg) scale(1);
-        }
-      }
-      @keyframes shake {
-        0%,
-        100% {
-          transform: translate(0);
-        }
-        25% {
-          transform: translate(7px, -4px) rotate(0.5deg);
-        }
-        50% {
-          transform: translate(-6px, 4px) rotate(-0.5deg);
-        }
-        75% {
-          transform: translate(4px, 2px);
-        }
-      }
-      body.shake main {
-        animation: shake 0.35s linear;
-      }
-      @keyframes screenFlash {
-        0% {
-          opacity: 0.8;
-        }
-        100% {
-          opacity: 0;
-        }
-      }
-      @media (max-width: 650px) {
-        .topline {
+      @media (max-width: 760px) {
+        header {
           display: block;
         }
         .switcher {
           display: inline-block;
           margin-top: 18px;
         }
-        .form-area,
-        .buttons {
+        .layout {
+          grid-template-columns: 1fr;
+        }
+      }
+      @media (max-width: 560px) {
+        .shell {
+          width: calc(100% - 20px);
+          padding-top: 16px;
+        }
+        .overview {
+          grid-template-columns: 1fr;
+        }
+        .add-form,
+        .actions {
           grid-template-columns: 1fr;
         }
         .job {
@@ -529,88 +328,96 @@
     </style>
   </head>
   <body>
-    <canvas id="space"></canvas>
-    <div class="scanlines"></div>
-    <div id="flash"></div>
-    <span class="floating-symbol symbol-one">✦</span>
-    <span class="floating-symbol symbol-two">+</span>
-    <span class="floating-symbol symbol-three">◆</span>
-    <main>
-      <div class="topline">
+    <div class="shell">
+      <header>
         <div>
-          <p class="kicker">Effekt-Version 2.0</p>
-          <h1>DRUCK<br />WERK</h1>
-          <p class="intro">
-            Die Auftragswarteschlange mit etwas zu viel Energie.
+          <p class="eyebrow">Print Desk / Version 2</p>
+          <h1>3D-Drucker<br />Leitstand</h1>
+          <p class="subtitle">
+            Ein übersichtlicher Leitstand für die Druckerwarteschlange. Der
+            nächste Auftrag bleibt immer der nächste.
           </p>
         </div>
-        <a class="switcher" href="/">Zur einfachen Version</a>
+        <a class="switcher" href="/">Zur einfachen Oberfläche</a>
+      </header>
+      <section class="overview">
+        <article class="metric">
+          <p class="metric-label">Drucker</p>
+          <p class="metric-value" id="metric-state">Bereit</p>
+        </article>
+        <article class="metric">
+          <p class="metric-label">Wartende Aufträge</p>
+          <p class="metric-value" id="metric-waiting">0</p>
+        </article>
+        <article class="metric">
+          <p class="metric-label">Gesamt</p>
+          <p class="metric-value" id="metric-total">0</p>
+        </article>
+      </section>
+      <div class="layout">
+        <section class="panel">
+          <h2 class="panel-title">
+            Drucker steuern <small>FIFO-Warteschlange</small>
+          </h2>
+          <div class="add-form">
+            <input
+              id="input_data"
+              type="text"
+              placeholder="Name des neuen Auftrags"
+              aria-label="Auftragsname"
+            /><button data-action="add">Auftrag hinzufügen</button>
+          </div>
+          <div class="actions">
+            <button data-action="start">Nächsten starten</button
+            ><button class="warning" data-action="finish">Auftrag fertig</button
+            ><button class="secondary" data-action="show">Aktualisieren</button>
+          </div>
+          <div
+            class="printer-state"
+            id="printer-state"
+            role="status"
+            aria-live="polite"
+          >
+            <span class="state-dot"></span
+            ><span id="status-text">Bereit. Der Drucker wartet.</span>
+          </div>
+          <div id="progress-area">
+            <div class="progress-info">
+              <span>Druckfortschritt</span><span id="time-left"></span>
+            </div>
+            <div id="progress-bar"><div id="progress-fill"></div></div>
+            <small id="finish-time"></small>
+          </div>
+        </section>
+        <section class="panel">
+          <h2 class="panel-title">Auftragsliste <small>Neueste oben</small></h2>
+          <div id="queue">
+            <p class="empty">Noch keine Aufträge vorhanden.</p>
+          </div>
+        </section>
       </div>
-      <div class="form-area">
-        <input
-          type="text"
-          id="input_data"
-          placeholder="Name des neuen Druckauftrags"
-          aria-label="Auftragsname"
-        />
-        <button data-action="add">Auftrag hinzufügen</button>
-      </div>
-      <div class="buttons">
-        <button data-action="start">Nächsten starten</button>
-        <button class="danger" data-action="finish">Auftrag fertig</button>
-        <button class="secondary" data-action="show">
-          Liste aktualisieren
-        </button>
-      </div>
-      <button class="silly-button" id="silly-button">Nicht drücken</button>
-      <p id="status" aria-live="polite">Bereit. Der Drucker wartet.</p>
-      <div id="progress-area">
-        <div class="progress-info">
-          <span>Druckfortschritt</span><span id="time-left"></span>
-        </div>
-        <div id="progress-bar"><div id="progress-fill"></div></div>
-        <small id="finish-time"></small>
-      </div>
-      <p id="oracle">Systemmeldung: Alles ist normal. Wahrscheinlich.</p>
-      <div class="queue-heading"><h2 class="section-title">Aufträge</h2></div>
-      <div id="queue"><p>Noch keine Aufträge vorhanden.</p></div>
-    </main>
-    <aside id="cat-popup" aria-live="polite">
-      <button
-        class="close-cat"
-        id="close-cat"
-        aria-label="Katzenbild schließen"
-      >
-        ×
-      </button>
-      <img
-        id="cat-image"
-        src="https://placecats.com/260/150"
-        alt="Eine unerwartete Katze"
-      />
-      <p id="cat-caption">Die Katze überwacht jetzt den Drucker.</p>
-    </aside>
+    </div>
     <script>
-      const status = document.querySelector("#status");
-      const input = document.querySelector("#input_data");
-      const queue = document.querySelector("#queue");
-      const buttons = document.querySelectorAll("button[data-action]");
-      const flash = document.querySelector("#flash");
-      const progressArea = document.querySelector("#progress-area");
-      const progressFill = document.querySelector("#progress-fill");
-      const timeLeft = document.querySelector("#time-left");
-      const finishTime = document.querySelector("#finish-time");
-      const printDuration = 30;
-      let timer;
-      let completingAutomatically = false;
-
+      const input = document.querySelector("#input_data"),
+        queue = document.querySelector("#queue"),
+        printerState = document.querySelector("#printer-state"),
+        statusText = document.querySelector("#status-text"),
+        metricState = document.querySelector("#metric-state"),
+        metricWaiting = document.querySelector("#metric-waiting"),
+        metricTotal = document.querySelector("#metric-total"),
+        progressArea = document.querySelector("#progress-area"),
+        progressFill = document.querySelector("#progress-fill"),
+        timeLeft = document.querySelector("#time-left"),
+        finishTime = document.querySelector("#finish-time"),
+        printDuration = 30;
+      let timer,
+        completingAutomatically = false;
       function stopTimer() {
         clearInterval(timer);
         localStorage.removeItem("druckerEnde");
         progressArea.classList.remove("visible");
         progressFill.style.width = "0%";
       }
-
       async function completeAutomatically() {
         if (completingAutomatically) return;
         completingAutomatically = true;
@@ -624,12 +431,11 @@
             throw new Error("Auftrag konnte nicht automatisch beendet werden.");
           await loadJobs();
         } catch (error) {
-          status.textContent = error.message;
+          statusText.textContent = error.message;
         } finally {
           completingAutomatically = false;
         }
       }
-
       function startTimer() {
         let end = Number(localStorage.getItem("druckerEnde"));
         if (!end || end <= Date.now()) {
@@ -640,11 +446,7 @@
         clearInterval(timer);
         const update = () => {
           const remaining = Math.max(0, Math.ceil((end - Date.now()) / 1000));
-          const progress = Math.min(
-            100,
-            ((printDuration - remaining) / printDuration) * 100,
-          );
-          progressFill.style.width = `${progress}%`;
+          progressFill.style.width = `${Math.min(100, ((printDuration - remaining) / printDuration) * 100)}%`;
           timeLeft.textContent = `${remaining} Sekunden übrig`;
           finishTime.textContent = `Voraussichtlich fertig um ${new Date(end).toLocaleTimeString("de-DE")}`;
           if (!remaining) {
@@ -655,26 +457,28 @@
         update();
         timer = setInterval(update, 1000);
       }
-      const sillyButton = document.querySelector("#silly-button");
-      const catPopup = document.querySelector("#cat-popup");
-      const catImage = document.querySelector("#cat-image");
-      const catCaption = document.querySelector("#cat-caption");
-      const oracle = document.querySelector("#oracle");
-
       function showJobs(message) {
         const busy = message.includes("(Wird gedruckt)");
         if (busy) startTimer();
         else stopTimer();
-        status.classList.toggle("busy", busy);
-        status.textContent = busy
+        printerState.classList.toggle("busy", busy);
+        statusText.textContent = busy
           ? "Der Drucker ist besetzt."
           : "Bereit. Der Drucker wartet.";
+        metricState.textContent = busy ? "Druckt" : "Bereit";
         if (message === "Keine Aufträge vorhanden.") {
-          queue.innerHTML = "<p>Noch keine Aufträge vorhanden.</p>";
+          queue.innerHTML =
+            '<p class="empty">Noch keine Aufträge vorhanden.</p>';
+          metricWaiting.textContent = "0";
+          metricTotal.textContent = "0";
           return;
         }
-        queue.innerHTML = message
-          .split(" | ")
+        const jobs = message.split(" | ");
+        metricWaiting.textContent = jobs.filter((job) =>
+          job.includes("(Wartend)"),
+        ).length;
+        metricTotal.textContent = jobs.length;
+        queue.innerHTML = jobs
           .reverse()
           .map((job) => {
             const match = job.match(/^(\d+): (.+) \((.+)\)$/);
@@ -689,7 +493,6 @@
           })
           .join("");
       }
-
       async function loadJobs() {
         const response = await fetch("/api/action", {
           method: "POST",
@@ -699,60 +502,8 @@
         const result = await response.json();
         showJobs(result.message);
       }
-
-      const catCaptions = [
-        "Die Katze kennt die Druckerwarteschlange.",
-        "Diese Katze wurde nicht bestellt.",
-        "Katzenstatus: verdächtig flauschig.",
-        "Die Katze sagt: Druck weiter.",
-      ];
-      function showCat() {
-        catImage.src = `https://placecats.com/${240 + Math.floor(Math.random() * 80)}/${140 + Math.floor(Math.random() * 50)}?x=${Date.now()}`;
-        catCaption.textContent =
-          catCaptions[Math.floor(Math.random() * catCaptions.length)];
-        catPopup.classList.remove("show");
-        catPopup.offsetHeight;
-        catPopup.classList.add("show");
-        setTimeout(() => catPopup.classList.remove("show"), 6500);
-      }
-
-      function explosion(button) {
-        const box = button.getBoundingClientRect();
-        const centerX = box.left + box.width / 2;
-        const centerY = box.top + box.height / 2;
-        const shockwave = document.createElement("span");
-        shockwave.className = "shockwave";
-        shockwave.style.left = `${centerX}px`;
-        shockwave.style.top = `${centerY}px`;
-        document.body.appendChild(shockwave);
-        setTimeout(() => shockwave.remove(), 750);
-        flash.style.animation = "none";
-        flash.offsetHeight;
-        flash.style.animation = "screenFlash .35s ease-out";
-
-        for (let i = 0; i < 32; i += 1) {
-          const spark = document.createElement("span");
-          spark.className = "spark";
-          spark.style.left = `${centerX}px`;
-          spark.style.top = `${centerY}px`;
-          spark.style.setProperty(
-            "--x",
-            `${Math.cos((i / 32) * Math.PI * 2) * (55 + Math.random() * 150)}px`,
-          );
-          spark.style.setProperty(
-            "--y",
-            `${Math.sin((i / 32) * Math.PI * 2) * (55 + Math.random() * 150)}px`,
-          );
-          document.body.appendChild(spark);
-          setTimeout(() => spark.remove(), 750);
-        }
-      }
-
-      buttons.forEach((button, index) => {
-        button.style.animationDelay = `${index * 120}ms`;
-        button.classList.add("falling");
+      document.querySelectorAll("button[data-action]").forEach((button) =>
         button.addEventListener("click", async () => {
-          if (button.dataset.action === "add") explosion(button);
           try {
             const response = await fetch("/api/action", {
               method: "POST",
@@ -768,91 +519,16 @@
             if (button.dataset.action === "add") input.value = "";
             await loadJobs();
             if (result.message === "Der Drucker ist besetzt.")
-              status.textContent = result.message;
+              statusText.textContent = result.message;
           } catch (error) {
-            status.textContent = error.message;
-            stopTimer();
+            statusText.textContent = error.message;
           }
-        });
-      });
-
-      sillyButton.addEventListener("click", () => {
-        document.body.classList.remove("shake");
-        document.body.offsetHeight;
-        document.body.classList.add("shake");
-        explosion(sillyButton);
-        status.textContent = "Warnung: Die Katze wurde informiert.";
-        showCat();
-      });
-      document.querySelector("#close-cat").addEventListener("click", () => {
-        catPopup.classList.remove("show");
-      });
-
-      const oracleMessages = [
-        "Systemmeldung: Alles ist normal. Wahrscheinlich.",
-        "Systemmeldung: Ein Knopf hat gerade geblinzelt.",
-        "Systemmeldung: Die Warteschlange hört zu.",
-        "Systemmeldung: Bitte grüße die unsichtbare Katze.",
-        "Systemmeldung: Drucker denkt über das Universum nach.",
-      ];
-      setInterval(() => {
-        oracle.textContent =
-          oracleMessages[Math.floor(Math.random() * oracleMessages.length)];
-      }, 3200);
-      setTimeout(showCat, 4200);
-      setInterval(showCat, 17000);
-
-      let lastTrail = 0;
-      document.addEventListener("pointermove", (event) => {
-        if (event.timeStamp - lastTrail < 35) return;
-        lastTrail = event.timeStamp;
-        const trail = document.createElement("span");
-        trail.className = "trail";
-        trail.style.left = `${event.clientX}px`;
-        trail.style.top = `${event.clientY}px`;
-        document.body.appendChild(trail);
-        setTimeout(() => trail.remove(), 500);
-      });
-
-      setInterval(() => {
-        const button = buttons[Math.floor(Math.random() * buttons.length)];
-        button.classList.remove("wild");
-        button.offsetHeight;
-        button.classList.add("wild");
-      }, 1800);
-
-      document.addEventListener("keydown", (event) => {
-        if (event.key === "Enter" && document.activeElement === input)
+        }),
+      );
+      input.addEventListener("keydown", (event) => {
+        if (event.key === "Enter")
           document.querySelector('[data-action="add"]').click();
       });
-
-      const canvas = document.querySelector("#space");
-      const context = canvas.getContext("2d");
-      const particles = Array.from({ length: 90 }, () => ({
-        x: Math.random(),
-        y: Math.random(),
-        speed: 0.001 + Math.random() * 0.004,
-        size: 1 + Math.random() * 2,
-      }));
-      function drawSpace() {
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
-        context.clearRect(0, 0, canvas.width, canvas.height);
-        particles.forEach((particle) => {
-          particle.y += particle.speed;
-          if (particle.y > 1) particle.y = 0;
-          context.fillStyle = particle.size > 2 ? "#ff4f9a" : "#45e7ff";
-          context.globalAlpha = 0.35 + particle.size / 4;
-          context.fillRect(
-            particle.x * canvas.width,
-            particle.y * canvas.height,
-            particle.size,
-            particle.size * 3,
-          );
-        });
-        requestAnimationFrame(drawSpace);
-      }
-      drawSpace();
       loadJobs();
     </script>
   </body>
