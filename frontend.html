@@ -1,0 +1,378 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Meine Python-Oberflaeche</title>
+    <style>
+      :root {
+        color-scheme: light;
+        font-family: Arial, sans-serif;
+        background: #f2f2f2;
+        color: #222;
+      }
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+      }
+      body {
+        min-height: 100vh;
+        margin: 0;
+        padding: 20px 0;
+        background: #f2f2f2;
+      }
+      main {
+        width: min(760px, calc(100% - 24px));
+        margin: 0 auto;
+        padding: clamp(18px, 4vw, 28px);
+        background: white;
+        border: 1px solid #ccc;
+        border-radius: 6px;
+        box-shadow: 0 2px 8px #00000018;
+      }
+      h1 {
+        margin: 0 0 8px;
+        font-size: clamp(1.45rem, 4vw, 1.8rem);
+      }
+      .intro {
+        margin-top: 0;
+        color: #555;
+      }
+      .form-area {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 8px;
+        margin: 20px 0 10px;
+      }
+      input {
+        min-width: 0;
+        width: 100%;
+        padding: 11px 12px;
+        border: 1px solid #aaa;
+        border-radius: 4px;
+        color: #222;
+        font: inherit;
+      }
+      input:focus {
+        outline: 2px solid #9bbbd3;
+        border-color: #477ea5;
+      }
+      .buttons {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 8px;
+      }
+      button {
+        padding: 11px 12px;
+        border: 1px solid #477ea5;
+        border-radius: 4px;
+        background: #477ea5;
+        color: white;
+        font-size: 0.95rem;
+        cursor: pointer;
+      }
+      button:hover {
+        background: #356789;
+      }
+      button.secondary {
+        background: #eee;
+        color: #333;
+        border-color: #aaa;
+      }
+      button.secondary:hover {
+        background: #ddd;
+      }
+      #status {
+        min-height: 24px;
+        margin: 20px 0 0;
+        padding: 12px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        background: #f7f7f7;
+      }
+      #status.busy {
+        border: 2px solid #c62828;
+        background: #fff0f0;
+        color: #a51d1d;
+      }
+      #progress-area {
+        display: none;
+        margin-top: 12px;
+      }
+      #progress-area.visible {
+        display: block;
+      }
+      .progress-info {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 5px;
+        color: #555;
+        font-size: 0.9rem;
+      }
+      #progress-bar {
+        width: 100%;
+        height: 14px;
+        overflow: hidden;
+        border: 1px solid #aaa;
+        background: #eee;
+      }
+      #progress-fill {
+        width: 0%;
+        height: 100%;
+        background: #477ea5;
+        transition: width 1s linear;
+      }
+      .section-title {
+        margin: 26px 0 10px;
+        font-size: 1.1rem;
+      }
+      .queue-heading {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: 12px;
+        border-bottom: 1px solid #ddd;
+      }
+      #queue {
+        display: grid;
+        gap: 8px;
+      }
+      .job {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 16px;
+        padding: 12px;
+        border: 1px solid #ddd;
+        border-left: 4px solid #aaa;
+        border-radius: 4px;
+        background: #fafafa;
+      }
+      .job.waiting {
+        border-left-color: #477ea5;
+      }
+      .job.printing {
+        border-left-color: #c62828;
+        background: #fff8f8;
+      }
+      .job.done {
+        border-left-color: #5b8b68;
+      }
+      .job-name {
+        font-weight: 700;
+      }
+      .job-status {
+        display: inline-block;
+        padding: 3px 7px;
+        color: #555;
+        font-size: 0.9rem;
+        text-align: right;
+        background: #eee;
+        border-radius: 3px;
+      }
+      .job.printing .job-status {
+        color: #a51d1d;
+        background: #ffe1e1;
+      }
+      .job.done .job-status {
+        color: #356342;
+        background: #e4f0e6;
+      }
+      @media (max-width: 600px) {
+        body {
+          padding: 12px 0;
+        }
+        .form-area,
+        .buttons {
+          grid-template-columns: 1fr;
+        }
+        .job {
+          align-items: flex-start;
+          flex-direction: column;
+          gap: 4px;
+        }
+        .job-status {
+          text-align: left;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>Meine Python-3D-Drucker</h1>
+      <p class="intro">
+        Druckaufträge hinzufügen und in der richtigen Reihenfolge starten.
+      </p>
+      <div class="form-area">
+        <input
+          type="text"
+          id="input_data"
+          placeholder="Zum Beispiel: Gehäuse drucken"
+          aria-label="Auftragsname"
+        />
+        <button data-action="add">+ Auftrag hinzufügen</button>
+      </div>
+      <div class="buttons">
+        <button data-action="start">Nächsten Auftrag starten</button>
+        <button data-action="finish">Auftrag fertig</button>
+        <button class="secondary" data-action="show">
+          Warteschlange aktualisieren
+        </button>
+      </div>
+      <p id="status" aria-live="polite">
+        Bereit. Noch keine Aktion ausgeführt.
+      </p>
+      <div id="progress-area">
+        <div class="progress-info">
+          <span>Druckfortschritt</span><span id="time-left"></span>
+        </div>
+        <div id="progress-bar"><div id="progress-fill"></div></div>
+        <small id="finish-time"></small>
+      </div>
+      <div class="queue-heading">
+        <h2 class="section-title">Aktuelle Aufträge</h2>
+      </div>
+      <div id="queue"><p>Noch keine Aufträge vorhanden.</p></div>
+    </main>
+    <script>
+      const status = document.querySelector("#status");
+      const input = document.querySelector("#input_data");
+      const queue = document.querySelector("#queue");
+      const progressArea = document.querySelector("#progress-area");
+      const progressFill = document.querySelector("#progress-fill");
+      const timeLeft = document.querySelector("#time-left");
+      const finishTime = document.querySelector("#finish-time");
+      const printDuration = 30;
+      let timer;
+      let completingAutomatically = false;
+
+      function stopTimer() {
+        clearInterval(timer);
+        localStorage.removeItem("druckerEnde");
+        progressArea.classList.remove("visible");
+        progressFill.style.width = "0%";
+      }
+
+      async function completeAutomatically() {
+        if (completingAutomatically) return;
+        completingAutomatically = true;
+        try {
+          const response = await fetch("/api/action", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ action: "finish" }),
+          });
+          if (!response.ok)
+            throw new Error("Auftrag konnte nicht automatisch beendet werden.");
+          await loadJobs();
+        } catch (error) {
+          status.textContent = error.message;
+        } finally {
+          completingAutomatically = false;
+        }
+      }
+
+      function startTimer() {
+        let end = Number(localStorage.getItem("druckerEnde"));
+        if (!end || end <= Date.now()) {
+          end = Date.now() + printDuration * 1000;
+          localStorage.setItem("druckerEnde", end);
+        }
+        progressArea.classList.add("visible");
+        clearInterval(timer);
+        const update = () => {
+          const remaining = Math.max(0, Math.ceil((end - Date.now()) / 1000));
+          const progress = Math.min(
+            100,
+            ((printDuration - remaining) / printDuration) * 100,
+          );
+          progressFill.style.width = `${progress}%`;
+          timeLeft.textContent = `${remaining} Sekunden übrig`;
+          finishTime.textContent = `Voraussichtlich fertig um ${new Date(end).toLocaleTimeString("de-DE")}`;
+          if (!remaining) {
+            clearInterval(timer);
+            completeAutomatically();
+          }
+        };
+        update();
+        timer = setInterval(update, 1000);
+      }
+
+      function showJobs(message) {
+        const busy = message.includes("(Wird gedruckt)");
+        if (busy) startTimer();
+        else stopTimer();
+        status.classList.toggle("busy", busy);
+        if (busy) {
+          status.textContent = "Der Drucker ist besetzt.";
+        } else if (status.textContent === "Der Drucker ist besetzt.") {
+          status.textContent = "Bereit.";
+        }
+
+        if (message === "Keine Aufträge vorhanden.") {
+          queue.innerHTML = "<p>Noch keine Aufträge vorhanden.</p>";
+          return;
+        }
+
+        const jobs = message.split(" | ").reverse();
+        queue.innerHTML = jobs
+          .map((job) => {
+            const match = job.match(/^(\d+): (.+) \((.+)\)$/);
+            if (!match) return `<div class="job"><span>${job}</span></div>`;
+            const statusClass =
+              match[3] === "Wird gedruckt"
+                ? "printing"
+                : match[3] === "Fertig"
+                  ? "done"
+                  : "waiting";
+            return `<div class="job ${statusClass}"><span class="job-name">#${match[1]} ${match[2]}</span><span class="job-status">${match[3]}</span></div>`;
+          })
+          .join("");
+      }
+
+      async function loadJobs() {
+        const response = await fetch("/api/action", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ action: "show" }),
+        });
+        const result = await response.json();
+        showJobs(result.message);
+      }
+
+      document.querySelectorAll("button").forEach((button) => {
+        button.addEventListener("click", async () => {
+          try {
+            const response = await fetch("/api/action", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                action: button.dataset.action,
+                input_data: input.value,
+              }),
+            });
+            const result = await response.json();
+            if (!response.ok)
+              throw new Error(result.message || "Anfrage fehlgeschlagen");
+            if (result.message === "Der Drucker ist besetzt.") {
+              status.textContent = result.message;
+              status.classList.add("busy");
+            }
+            if (button.dataset.action === "add") input.value = "";
+            if (button.dataset.action === "show") {
+              showJobs(result.message);
+            } else {
+              await loadJobs();
+            }
+          } catch (error) {
+            status.textContent = error.message;
+            stopTimer();
+          }
+        });
+      });
+
+      loadJobs();
+    </script>
+  </body>
+</html>

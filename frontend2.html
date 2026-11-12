@@ -1,0 +1,859 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>3D-Drucker | Effekt-Version</title>
+    <style>
+      :root {
+        color-scheme: dark;
+        --cyan: #45e7ff;
+        --pink: #ff4f9a;
+        --yellow: #ffe66d;
+        --green: #65f39b;
+        --red: #ff5b5b;
+        --ink: #07121d;
+        --panel: #0c1d2bdd;
+        font-family: "Trebuchet MS", Arial, sans-serif;
+        color: #eefaff;
+        background: var(--ink);
+      }
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        min-height: 100%;
+      }
+      body {
+        margin: 0;
+        overflow-x: hidden;
+        cursor: crosshair;
+        background: #07121d;
+      }
+      #space {
+        position: fixed;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+      }
+      .scanlines {
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        opacity: 0.14;
+        background: repeating-linear-gradient(
+          0deg,
+          transparent 0 3px,
+          #fff 4px 5px
+        );
+        mix-blend-mode: overlay;
+      }
+      #flash {
+        position: fixed;
+        z-index: 4;
+        inset: 0;
+        pointer-events: none;
+        background: white;
+        opacity: 0;
+      }
+      .floating-symbol {
+        position: fixed;
+        z-index: 0;
+        color: var(--pink);
+        font-size: clamp(1.5rem, 5vw, 4rem);
+        font-weight: bold;
+        pointer-events: none;
+        text-shadow: 0 0 16px currentColor;
+        animation: drift 6s ease-in-out infinite alternate;
+      }
+      .symbol-one {
+        top: 12%;
+        left: 5%;
+      }
+      .symbol-two {
+        right: 7%;
+        bottom: 18%;
+        color: var(--yellow);
+        animation-delay: -2s;
+      }
+      .symbol-three {
+        top: 56%;
+        left: 88%;
+        color: var(--green);
+        animation-delay: -4s;
+      }
+      main {
+        position: relative;
+        z-index: 1;
+        width: min(900px, calc(100% - 24px));
+        margin: 24px auto;
+        padding: clamp(18px, 5vw, 42px);
+        border: 1px solid #45e7ff66;
+        background: var(--panel);
+        box-shadow:
+          0 0 35px #45e7ff22,
+          inset 0 0 30px #ff4f9a0d;
+        backdrop-filter: blur(7px);
+      }
+      .topline {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 20px;
+      }
+      .kicker {
+        margin: 0 0 6px;
+        color: var(--yellow);
+        font-size: 0.75rem;
+        font-weight: bold;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+      }
+      h1 {
+        position: relative;
+        margin: 0;
+        color: var(--cyan);
+        font-size: clamp(2rem, 7vw, 4.8rem);
+        line-height: 0.95;
+        text-shadow:
+          4px 4px 0 #ff4f9a44,
+          0 0 18px #45e7ff99;
+        animation: titleJolt 2.4s steps(2, end) infinite;
+      }
+      .intro {
+        color: #b6d2dd;
+        line-height: 1.5;
+      }
+      .switcher {
+        flex: 0 0 auto;
+        padding: 8px 10px;
+        border: 1px solid var(--yellow);
+        color: var(--yellow);
+        text-decoration: none;
+        font-size: 0.8rem;
+        font-weight: bold;
+      }
+      .switcher:hover {
+        background: var(--yellow);
+        color: var(--ink);
+      }
+      .form-area {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 10px;
+        margin: 28px 0 12px;
+      }
+      input {
+        min-width: 0;
+        width: 100%;
+        padding: 14px;
+        border: 1px solid #45e7ff88;
+        border-radius: 0;
+        outline: 0;
+        color: white;
+        background: #06121ddd;
+        font: inherit;
+        box-shadow: inset 0 0 12px #45e7ff12;
+      }
+      input:focus {
+        border-color: var(--yellow);
+        box-shadow: 0 0 14px #ffe66d66;
+      }
+      button {
+        position: relative;
+        overflow: hidden;
+        padding: 13px 15px;
+        border: 1px solid var(--cyan);
+        border-radius: 0;
+        color: var(--ink);
+        background: var(--cyan);
+        font: inherit;
+        font-weight: bold;
+        cursor: pointer;
+        transition:
+          transform 0.15s,
+          box-shadow 0.15s;
+      }
+      button:hover {
+        transform: translateY(-4px) rotate(-1deg);
+        box-shadow:
+          0 9px 0 #ff4f9a,
+          0 0 22px #45e7ffcc;
+      }
+      button:active {
+        transform: translateY(2px);
+      }
+      button.wild {
+        animation: wildButton 0.55s ease-in-out;
+      }
+      button.secondary {
+        color: var(--yellow);
+        background: transparent;
+        border-color: var(--yellow);
+      }
+      button.danger {
+        color: white;
+        background: #a92345;
+        border-color: var(--pink);
+      }
+      .buttons {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 10px;
+      }
+      #status {
+        margin: 24px 0 0;
+        padding: 14px;
+        border: 1px solid #45e7ff55;
+        color: var(--cyan);
+        background: #06121dcc;
+        box-shadow: 0 0 18px #45e7ff18;
+      }
+      #status.busy {
+        border-color: var(--red);
+        color: #fff;
+        background: #5d1329cc;
+        animation: alarm 0.7s infinite alternate;
+      }
+      #progress-area {
+        display: none;
+        margin-top: 12px;
+      }
+      #progress-area.visible {
+        display: block;
+      }
+      .progress-info {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 5px;
+        color: var(--yellow);
+        font-size: 0.88rem;
+      }
+      #progress-bar {
+        width: 100%;
+        height: 16px;
+        overflow: hidden;
+        border: 1px solid var(--cyan);
+        background: #06121d;
+      }
+      #progress-fill {
+        width: 0%;
+        height: 100%;
+        background: linear-gradient(
+          90deg,
+          var(--pink),
+          var(--yellow),
+          var(--green)
+        );
+        box-shadow: 0 0 14px var(--yellow);
+        transition: width 1s linear;
+      }
+      .queue-heading {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        margin-top: 30px;
+        border-bottom: 1px solid #45e7ff55;
+      }
+      .section-title {
+        margin: 0 0 10px;
+        color: var(--yellow);
+      }
+      #queue {
+        display: grid;
+        gap: 10px;
+        margin-top: 12px;
+      }
+      .job {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 16px;
+        padding: 14px;
+        border: 1px solid #ffffff22;
+        border-left: 5px solid var(--cyan);
+        background: #081827dd;
+        animation: arrive 0.45s both;
+      }
+      .job.printing {
+        border-left-color: var(--red);
+        box-shadow: 0 0 16px #ff5b5b33;
+      }
+      .job.done {
+        border-left-color: var(--green);
+        opacity: 0.72;
+      }
+      .job-name {
+        font-weight: bold;
+      }
+      .job-status {
+        color: var(--yellow);
+        font-size: 0.88rem;
+      }
+      .job.printing .job-status {
+        color: var(--red);
+      }
+      .job.done .job-status {
+        color: var(--green);
+      }
+      .falling {
+        animation: fall 2.8s ease-in-out;
+      }
+      .spark {
+        position: fixed;
+        z-index: 5;
+        width: 8px;
+        height: 8px;
+        pointer-events: none;
+        background: var(--yellow);
+        box-shadow: 0 0 12px var(--yellow);
+        animation: explode 0.7s ease-out forwards;
+      }
+      .shockwave {
+        position: fixed;
+        z-index: 4;
+        width: 20px;
+        height: 20px;
+        border: 3px solid var(--yellow);
+        border-radius: 50%;
+        pointer-events: none;
+        animation: shockwave 0.7s ease-out forwards;
+      }
+      .trail {
+        position: fixed;
+        z-index: 3;
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        pointer-events: none;
+        background: var(--cyan);
+        box-shadow: 0 0 12px var(--cyan);
+        animation: trail 0.45s linear forwards;
+      }
+      .silly-button {
+        margin-top: 16px;
+        color: #07121d;
+        background: var(--pink);
+        border-color: var(--yellow);
+        transform: rotate(2deg);
+      }
+      #oracle {
+        min-height: 22px;
+        margin: 14px 0 0;
+        color: #ff9ac4;
+        font-family: "Courier New", monospace;
+        font-size: 0.82rem;
+      }
+      #cat-popup {
+        position: fixed;
+        z-index: 8;
+        right: 18px;
+        bottom: 18px;
+        display: none;
+        width: min(280px, calc(100% - 36px));
+        padding: 10px;
+        border: 2px solid var(--pink);
+        background: #07121df2;
+        box-shadow:
+          8px 8px 0 var(--yellow),
+          0 0 24px #ff4f9acc;
+        transform: rotate(3deg);
+      }
+      #cat-popup.show {
+        display: block;
+        animation: catAppear 0.45s cubic-bezier(0.2, 1.7, 0.5, 1);
+      }
+      #cat-popup img {
+        display: block;
+        width: 100%;
+        height: 150px;
+        object-fit: cover;
+        border: 1px solid var(--cyan);
+      }
+      #cat-popup p {
+        margin: 9px 0 2px;
+        color: var(--yellow);
+        font-size: 0.85rem;
+        font-weight: bold;
+      }
+      .close-cat {
+        position: absolute;
+        z-index: 1;
+        top: -12px;
+        right: -12px;
+        width: 30px;
+        height: 30px;
+        padding: 0;
+        border-radius: 50%;
+        color: white;
+        background: var(--red);
+      }
+      @keyframes fall {
+        0% {
+          transform: translateY(-80px) rotate(-8deg);
+          opacity: 0;
+        }
+        35% {
+          opacity: 1;
+        }
+        65% {
+          transform: translateY(8px) rotate(5deg);
+        }
+        100% {
+          transform: translateY(0) rotate(0);
+        }
+      }
+      @keyframes arrive {
+        from {
+          opacity: 0;
+          transform: translateX(24px);
+        }
+        to {
+          opacity: 1;
+          transform: translateX(0);
+        }
+      }
+      @keyframes explode {
+        to {
+          transform: translate(var(--x), var(--y)) scale(0);
+          opacity: 0;
+        }
+      }
+      @keyframes alarm {
+        to {
+          box-shadow: 0 0 28px #ff5b5b99;
+        }
+      }
+      @keyframes drift {
+        from {
+          transform: translate(0, 0) rotate(-12deg);
+        }
+        to {
+          transform: translate(35px, -45px) rotate(18deg);
+        }
+      }
+      @keyframes titleJolt {
+        0%,
+        88%,
+        100% {
+          transform: skew(0);
+        }
+        90% {
+          transform: skew(-8deg) translateX(4px);
+        }
+        92% {
+          transform: skew(7deg) translateX(-3px);
+        }
+      }
+      @keyframes wildButton {
+        25% {
+          transform: translateY(-12px) rotate(5deg) scale(1.08);
+        }
+        55% {
+          transform: translateY(7px) rotate(-7deg);
+        }
+        80% {
+          transform: translateY(-4px) rotate(3deg);
+        }
+      }
+      @keyframes shockwave {
+        to {
+          transform: translate(-50%, -50%) scale(15);
+          opacity: 0;
+        }
+      }
+      @keyframes trail {
+        to {
+          transform: scale(0);
+          opacity: 0;
+        }
+      }
+      @keyframes catAppear {
+        from {
+          opacity: 0;
+          transform: translate(80px, 80px) rotate(35deg) scale(0);
+        }
+        to {
+          opacity: 1;
+          transform: rotate(3deg) scale(1);
+        }
+      }
+      @keyframes shake {
+        0%,
+        100% {
+          transform: translate(0);
+        }
+        25% {
+          transform: translate(7px, -4px) rotate(0.5deg);
+        }
+        50% {
+          transform: translate(-6px, 4px) rotate(-0.5deg);
+        }
+        75% {
+          transform: translate(4px, 2px);
+        }
+      }
+      body.shake main {
+        animation: shake 0.35s linear;
+      }
+      @keyframes screenFlash {
+        0% {
+          opacity: 0.8;
+        }
+        100% {
+          opacity: 0;
+        }
+      }
+      @media (max-width: 650px) {
+        .topline {
+          display: block;
+        }
+        .switcher {
+          display: inline-block;
+          margin-top: 18px;
+        }
+        .form-area,
+        .buttons {
+          grid-template-columns: 1fr;
+        }
+        .job {
+          align-items: flex-start;
+          flex-direction: column;
+          gap: 5px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <canvas id="space"></canvas>
+    <div class="scanlines"></div>
+    <div id="flash"></div>
+    <span class="floating-symbol symbol-one">✦</span>
+    <span class="floating-symbol symbol-two">+</span>
+    <span class="floating-symbol symbol-three">◆</span>
+    <main>
+      <div class="topline">
+        <div>
+          <p class="kicker">Effekt-Version 2.0</p>
+          <h1>DRUCK<br />WERK</h1>
+          <p class="intro">
+            Die Auftragswarteschlange mit etwas zu viel Energie.
+          </p>
+        </div>
+        <a class="switcher" href="/">Zur einfachen Version</a>
+      </div>
+      <div class="form-area">
+        <input
+          type="text"
+          id="input_data"
+          placeholder="Name des neuen Druckauftrags"
+          aria-label="Auftragsname"
+        />
+        <button data-action="add">Auftrag hinzufügen</button>
+      </div>
+      <div class="buttons">
+        <button data-action="start">Nächsten starten</button>
+        <button class="danger" data-action="finish">Auftrag fertig</button>
+        <button class="secondary" data-action="show">
+          Liste aktualisieren
+        </button>
+      </div>
+      <button class="silly-button" id="silly-button">Nicht drücken</button>
+      <p id="status" aria-live="polite">Bereit. Der Drucker wartet.</p>
+      <div id="progress-area">
+        <div class="progress-info">
+          <span>Druckfortschritt</span><span id="time-left"></span>
+        </div>
+        <div id="progress-bar"><div id="progress-fill"></div></div>
+        <small id="finish-time"></small>
+      </div>
+      <p id="oracle">Systemmeldung: Alles ist normal. Wahrscheinlich.</p>
+      <div class="queue-heading"><h2 class="section-title">Aufträge</h2></div>
+      <div id="queue"><p>Noch keine Aufträge vorhanden.</p></div>
+    </main>
+    <aside id="cat-popup" aria-live="polite">
+      <button
+        class="close-cat"
+        id="close-cat"
+        aria-label="Katzenbild schließen"
+      >
+        ×
+      </button>
+      <img
+        id="cat-image"
+        src="https://placecats.com/260/150"
+        alt="Eine unerwartete Katze"
+      />
+      <p id="cat-caption">Die Katze überwacht jetzt den Drucker.</p>
+    </aside>
+    <script>
+      const status = document.querySelector("#status");
+      const input = document.querySelector("#input_data");
+      const queue = document.querySelector("#queue");
+      const buttons = document.querySelectorAll("button[data-action]");
+      const flash = document.querySelector("#flash");
+      const progressArea = document.querySelector("#progress-area");
+      const progressFill = document.querySelector("#progress-fill");
+      const timeLeft = document.querySelector("#time-left");
+      const finishTime = document.querySelector("#finish-time");
+      const printDuration = 30;
+      let timer;
+      let completingAutomatically = false;
+
+      function stopTimer() {
+        clearInterval(timer);
+        localStorage.removeItem("druckerEnde");
+        progressArea.classList.remove("visible");
+        progressFill.style.width = "0%";
+      }
+
+      async function completeAutomatically() {
+        if (completingAutomatically) return;
+        completingAutomatically = true;
+        try {
+          const response = await fetch("/api/action", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ action: "finish" }),
+          });
+          if (!response.ok)
+            throw new Error("Auftrag konnte nicht automatisch beendet werden.");
+          await loadJobs();
+        } catch (error) {
+          status.textContent = error.message;
+        } finally {
+          completingAutomatically = false;
+        }
+      }
+
+      function startTimer() {
+        let end = Number(localStorage.getItem("druckerEnde"));
+        if (!end || end <= Date.now()) {
+          end = Date.now() + printDuration * 1000;
+          localStorage.setItem("druckerEnde", end);
+        }
+        progressArea.classList.add("visible");
+        clearInterval(timer);
+        const update = () => {
+          const remaining = Math.max(0, Math.ceil((end - Date.now()) / 1000));
+          const progress = Math.min(
+            100,
+            ((printDuration - remaining) / printDuration) * 100,
+          );
+          progressFill.style.width = `${progress}%`;
+          timeLeft.textContent = `${remaining} Sekunden übrig`;
+          finishTime.textContent = `Voraussichtlich fertig um ${new Date(end).toLocaleTimeString("de-DE")}`;
+          if (!remaining) {
+            clearInterval(timer);
+            completeAutomatically();
+          }
+        };
+        update();
+        timer = setInterval(update, 1000);
+      }
+      const sillyButton = document.querySelector("#silly-button");
+      const catPopup = document.querySelector("#cat-popup");
+      const catImage = document.querySelector("#cat-image");
+      const catCaption = document.querySelector("#cat-caption");
+      const oracle = document.querySelector("#oracle");
+
+      function showJobs(message) {
+        const busy = message.includes("(Wird gedruckt)");
+        if (busy) startTimer();
+        else stopTimer();
+        status.classList.toggle("busy", busy);
+        status.textContent = busy
+          ? "Der Drucker ist besetzt."
+          : "Bereit. Der Drucker wartet.";
+        if (message === "Keine Aufträge vorhanden.") {
+          queue.innerHTML = "<p>Noch keine Aufträge vorhanden.</p>";
+          return;
+        }
+        queue.innerHTML = message
+          .split(" | ")
+          .reverse()
+          .map((job) => {
+            const match = job.match(/^(\d+): (.+) \((.+)\)$/);
+            if (!match) return `<div class="job">${job}</div>`;
+            const kind =
+              match[3] === "Wird gedruckt"
+                ? "printing"
+                : match[3] === "Fertig"
+                  ? "done"
+                  : "";
+            return `<div class="job ${kind}"><span class="job-name">#${match[1]} ${match[2]}</span><span class="job-status">${match[3]}</span></div>`;
+          })
+          .join("");
+      }
+
+      async function loadJobs() {
+        const response = await fetch("/api/action", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ action: "show" }),
+        });
+        const result = await response.json();
+        showJobs(result.message);
+      }
+
+      const catCaptions = [
+        "Die Katze kennt die Druckerwarteschlange.",
+        "Diese Katze wurde nicht bestellt.",
+        "Katzenstatus: verdächtig flauschig.",
+        "Die Katze sagt: Druck weiter.",
+      ];
+      function showCat() {
+        catImage.src = `https://placecats.com/${240 + Math.floor(Math.random() * 80)}/${140 + Math.floor(Math.random() * 50)}?x=${Date.now()}`;
+        catCaption.textContent =
+          catCaptions[Math.floor(Math.random() * catCaptions.length)];
+        catPopup.classList.remove("show");
+        catPopup.offsetHeight;
+        catPopup.classList.add("show");
+        setTimeout(() => catPopup.classList.remove("show"), 6500);
+      }
+
+      function explosion(button) {
+        const box = button.getBoundingClientRect();
+        const centerX = box.left + box.width / 2;
+        const centerY = box.top + box.height / 2;
+        const shockwave = document.createElement("span");
+        shockwave.className = "shockwave";
+        shockwave.style.left = `${centerX}px`;
+        shockwave.style.top = `${centerY}px`;
+        document.body.appendChild(shockwave);
+        setTimeout(() => shockwave.remove(), 750);
+        flash.style.animation = "none";
+        flash.offsetHeight;
+        flash.style.animation = "screenFlash .35s ease-out";
+
+        for (let i = 0; i < 32; i += 1) {
+          const spark = document.createElement("span");
+          spark.className = "spark";
+          spark.style.left = `${centerX}px`;
+          spark.style.top = `${centerY}px`;
+          spark.style.setProperty(
+            "--x",
+            `${Math.cos((i / 32) * Math.PI * 2) * (55 + Math.random() * 150)}px`,
+          );
+          spark.style.setProperty(
+            "--y",
+            `${Math.sin((i / 32) * Math.PI * 2) * (55 + Math.random() * 150)}px`,
+          );
+          document.body.appendChild(spark);
+          setTimeout(() => spark.remove(), 750);
+        }
+      }
+
+      buttons.forEach((button, index) => {
+        button.style.animationDelay = `${index * 120}ms`;
+        button.classList.add("falling");
+        button.addEventListener("click", async () => {
+          if (button.dataset.action === "add") explosion(button);
+          try {
+            const response = await fetch("/api/action", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                action: button.dataset.action,
+                input_data: input.value,
+              }),
+            });
+            const result = await response.json();
+            if (!response.ok)
+              throw new Error(result.message || "Anfrage fehlgeschlagen");
+            if (button.dataset.action === "add") input.value = "";
+            await loadJobs();
+            if (result.message === "Der Drucker ist besetzt.")
+              status.textContent = result.message;
+          } catch (error) {
+            status.textContent = error.message;
+            stopTimer();
+          }
+        });
+      });
+
+      sillyButton.addEventListener("click", () => {
+        document.body.classList.remove("shake");
+        document.body.offsetHeight;
+        document.body.classList.add("shake");
+        explosion(sillyButton);
+        status.textContent = "Warnung: Die Katze wurde informiert.";
+        showCat();
+      });
+      document.querySelector("#close-cat").addEventListener("click", () => {
+        catPopup.classList.remove("show");
+      });
+
+      const oracleMessages = [
+        "Systemmeldung: Alles ist normal. Wahrscheinlich.",
+        "Systemmeldung: Ein Knopf hat gerade geblinzelt.",
+        "Systemmeldung: Die Warteschlange hört zu.",
+        "Systemmeldung: Bitte grüße die unsichtbare Katze.",
+        "Systemmeldung: Drucker denkt über das Universum nach.",
+      ];
+      setInterval(() => {
+        oracle.textContent =
+          oracleMessages[Math.floor(Math.random() * oracleMessages.length)];
+      }, 3200);
+      setTimeout(showCat, 4200);
+      setInterval(showCat, 17000);
+
+      let lastTrail = 0;
+      document.addEventListener("pointermove", (event) => {
+        if (event.timeStamp - lastTrail < 35) return;
+        lastTrail = event.timeStamp;
+        const trail = document.createElement("span");
+        trail.className = "trail";
+        trail.style.left = `${event.clientX}px`;
+        trail.style.top = `${event.clientY}px`;
+        document.body.appendChild(trail);
+        setTimeout(() => trail.remove(), 500);
+      });
+
+      setInterval(() => {
+        const button = buttons[Math.floor(Math.random() * buttons.length)];
+        button.classList.remove("wild");
+        button.offsetHeight;
+        button.classList.add("wild");
+      }, 1800);
+
+      document.addEventListener("keydown", (event) => {
+        if (event.key === "Enter" && document.activeElement === input)
+          document.querySelector('[data-action="add"]').click();
+      });
+
+      const canvas = document.querySelector("#space");
+      const context = canvas.getContext("2d");
+      const particles = Array.from({ length: 90 }, () => ({
+        x: Math.random(),
+        y: Math.random(),
+        speed: 0.001 + Math.random() * 0.004,
+        size: 1 + Math.random() * 2,
+      }));
+      function drawSpace() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        context.clearRect(0, 0, canvas.width, canvas.height);
+        particles.forEach((particle) => {
+          particle.y += particle.speed;
+          if (particle.y > 1) particle.y = 0;
+          context.fillStyle = particle.size > 2 ? "#ff4f9a" : "#45e7ff";
+          context.globalAlpha = 0.35 + particle.size / 4;
+          context.fillRect(
+            particle.x * canvas.width,
+            particle.y * canvas.height,
+            particle.size,
+            particle.size * 3,
+          );
+        });
+        requestAnimationFrame(drawSpace);
+      }
+      drawSpace();
+      loadJobs();
+    </script>
+  </body>
+</html>
